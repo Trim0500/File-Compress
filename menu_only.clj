@@ -46,7 +46,7 @@
   (print "\nPlease enter a file name => ") 
   (flush)
   (let [file_name (read-line)]
-     (println "now compress" file_name "with with the functions(s) you provide in compress.clj")))
+     (compress/CompressFileContent file_name)))
 
 
 ; Decompress the (valid) file provided by the user. You will replace the println expression with code 
