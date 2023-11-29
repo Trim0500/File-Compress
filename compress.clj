@@ -33,3 +33,13 @@
     (spit (str fileName ".ct") (str/join " " compressedWords))
     )
   (println "Outputted the compressed contents to the file!"))
+
+(defn DecompressFileContent
+  [fileName]
+  (let [compressedContent (slurp fileName)
+        compressedWords (str/split compressedContent #"\s")
+        originalWords (map (fn [compressedWord]
+                             (let [returnedWord (get words (int (Integer/parseInt compressedWord)))]
+                               returnedWord))
+                           compressedWords)]
+    (println (str (str/join " " originalWords)))))

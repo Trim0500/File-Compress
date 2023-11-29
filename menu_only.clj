@@ -56,7 +56,7 @@
   (print "\nPlease enter a file name => ") 
   (flush)
   (let [file_name (read-line)]
-     (println "now decompress" file_name "with with the functions(s) you provide in compress.clj")))
+     (compress/DecompressFileContent file_name)))
 
 
 ; If the menu selection is valid, call the relevant function to 
