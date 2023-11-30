@@ -25,17 +25,19 @@
 (defn CompressFileContent
   [fileName]
   (if (.exists (io/file fileName))
-    (let [fileContent (slurp fileName)
-          fileWords (str/split fileContent #"\s")
-          compressedWords (map (fn [word]
-                                 (let [firstMatchFrequency (first (for [i (range (count words))
-                                                                        :when (== (compare (nth words i) word) 0)]
-                                                                    i))]
-                                   (if (not= nil firstMatchFrequency)
-                                     (str firstMatchFrequency)))) fileWords)]
-      (spit (str fileName ".ct") (str/join " " compressedWords)))
-    (println "Outputted the compressed contents to the file!"))
-    (println "Oops: specified file does not exist"))
+    (do 
+      (let [fileContent (slurp fileName)
+            fileWords (str/split fileContent #"\s")
+            compressedWords (map (fn [word]
+                                   (let [firstMatchFrequency (first (for [i (range (count words))
+                                                                          :when (== (compare (nth words i) word) 0)]
+                                                                      i))]
+                                     (if (not= nil firstMatchFrequency)
+                                       (str firstMatchFrequency)
+                                       word))) fileWords)]
+        (spit (str fileName ".ct") (str/join " " compressedWords)))
+      (println "Outputted the compressed contents to the file!"))
+    (println "Oops: specified file does not exist")))
 
 (defn DecompressFileContent
   [fileName]
@@ -43,8 +45,10 @@
     (let [compressedContent (slurp fileName)
           compressedWords (str/split compressedContent #"\s")
           originalWords (map (fn [compressedWord]
-                               (let [returnedWord (get words (int (Integer/parseInt compressedWord)))]
+                               (let [returnedWord (if (= nil (re-matches #"[0-9]+" compressedWord))
+                                                    compressedWord
+                                                    (get words (int (Integer/parseInt compressedWord))))]
                                  returnedWord))
                              compressedWords)]
       (println (str (str/join " " originalWords))))
-    (println "Outputted the compressed contents to the file!")))
+    (println "Oops: specified file does not exist")))
