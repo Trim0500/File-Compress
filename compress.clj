@@ -33,8 +33,10 @@
                                                                           :when (== (compare (nth words i) word) 0)]
                                                                       i))]
                                      (if (not= nil firstMatchFrequency)
-                                       (str firstMatchFrequency)
-                                       word))) fileWords)]
+                                       (str firstMatchFrequency) 
+                                       (if (= nil (re-matches #"[0-9]+" word)) 
+                                         word 
+                                         (str "@" word "@"))))) fileWords)]
         (spit (str fileName ".ct") (str/join " " compressedWords)))
       (println "Outputted the compressed contents to the file!"))
     (println "Oops: specified file does not exist")))
@@ -45,9 +47,11 @@
     (let [compressedContent (slurp fileName)
           compressedWords (str/split compressedContent #"\s")
           originalWords (map (fn [compressedWord]
-                               (let [returnedWord (if (= nil (re-matches #"[0-9]+" compressedWord))
-                                                    compressedWord
-                                                    (get words (int (Integer/parseInt compressedWord))))]
+                               (let [returnedWord (if (not= nil (re-matches #"^@[0-9]+@$" compressedWord))
+                                                     (str/replace compressedWord #"@" "")
+                                                     (if (not= nil (re-matches #"^[0-9][0-9]*$" compressedWord))
+                                                       (get words (int (Integer/parseInt compressedWord)))
+                                                       compressedWord))]
                                  returnedWord))
                              compressedWords)]
       (println (str (str/join " " originalWords))))
