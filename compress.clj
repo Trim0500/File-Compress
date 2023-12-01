@@ -22,21 +22,59 @@
 
 (def words (str/split freqFileContent #"\s"))
 
+(defn FindFrequencyCount
+  [word]
+  (let [firstMatchFrequency (first (for [i (range (count words))
+                                         :when (== (compare (nth words i) word) 0)]
+                                     i))]
+    (if (not= nil firstMatchFrequency)
+      (str firstMatchFrequency)
+      word)))
+
+(defn TreatPunctuation
+  [wordToCompress]
+   (if (not= nil (re-matches #"^[\(\[\{.,!?@$][a-zA-Z]+[\)\]\}.,!?@$]$" wordToCompress))
+     (str
+      (subs wordToCompress 0 1) 
+      " " 
+      (FindFrequencyCount (subs wordToCompress 1 (dec (count wordToCompress)))) 
+      " " 
+      (subs wordToCompress (dec (count wordToCompress))))
+     (if (not= nil (re-matches #"^[\(\[\{.,!?@$][a-zA-Z]+$" wordToCompress))
+        (str 
+         (subs wordToCompress 0 1)
+         " "
+         (FindFrequencyCount (subs wordToCompress 1)))
+        (if (not= nil (re-matches #"^[a-zA-Z]+[\)\]\}.,!?@$]{1,2}$" wordToCompress))
+          (if (not= nil (re-matches #"^[a-zA-Z]+[\)\]\},.!/@$]{2}$" wordToCompress))
+            (str
+             (FindFrequencyCount (subs wordToCompress 0 (dec (dec (count wordToCompress)))))
+             " "
+             (subs wordToCompress (dec (dec (count wordToCompress))) (dec (count wordToCompress)))
+             " "
+             (subs wordToCompress (dec (count wordToCompress))))
+            (str
+             (FindFrequencyCount (subs wordToCompress 0 (dec (count wordToCompress))))
+             " "
+             (subs wordToCompress (dec (count wordToCompress)))))
+          (FindFrequencyCount wordToCompress)))))
+
 (defn CompressFileContent
   [fileName]
   (if (.exists (io/file fileName))
     (do 
       (let [fileContent (slurp fileName)
-            fileWords (str/split fileContent #"\s")
+            fileWords (str/split fileContent #"[\s\r\n]")
             compressedWords (map (fn [word]
                                    (let [firstMatchFrequency (first (for [i (range (count words))
-                                                                          :when (== (compare (nth words i) word) 0)]
+                                                                          :when (== (compare (nth words i) (str/lower-case word)) 0)]
                                                                       i))]
                                      (if (not= nil firstMatchFrequency)
                                        (str firstMatchFrequency) 
-                                       (if (= nil (re-matches #"[0-9]+" word)) 
-                                         word 
-                                         (str "@" word "@"))))) fileWords)]
+                                       (if (not= nil (re-matches #"[0-9]+" word))
+                                         (str "@" word "@")
+                                         (TreatPunctuation (str/lower-case word))))))
+                                 fileWords)]
         (spit (str fileName ".ct") (str/join " " compressedWords)))
       (println "Outputted the compressed contents to the file!"))
     (println "Oops: specified file does not exist")))
