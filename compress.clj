@@ -67,13 +67,13 @@
             fileWords (str/split fileContent #"[\s\r\n]")
             compressedWords (map (fn [word]
                                    (let [firstMatchFrequency (first (for [i (range (count words))
-                                                                          :when (== (compare (nth words i) (str/lower-case word)) 0)]
+                                                                          :when (== (compare (str/lower-case (nth words i)) (str/lower-case word)) 0)]
                                                                       i))]
                                      (if (not= nil firstMatchFrequency)
                                        (str firstMatchFrequency) 
                                        (if (not= nil (re-matches #"[0-9]+" word))
                                          (str "@" word "@")
-                                         (TreatPunctuation (str/lower-case word))))))
+                                         (TreatPunctuation word)))))
                                  fileWords)]
         (spit (str fileName ".ct") (str/join " " compressedWords)))
       (println "Outputted the compressed contents to the file!"))
