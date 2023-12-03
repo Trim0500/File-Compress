@@ -79,6 +79,13 @@
       (println "Outputted the compressed contents to the file!"))
     (println "Oops: specified file does not exist")))
 
+(defn FormatUncompressedString
+  [uncompressedString]
+  (let [appendSpaceFormattedString (str/replace uncompressedString #"([\(\[\{@])(\s)" "$1")
+        prependSpaceFormattedString (str/replace appendSpaceFormattedString #"(\s)([\)\]\}.,!?$])" "$2")
+        sentenceStartFormattedString (str/replace prependSpaceFormattedString #"(\.{1}\s{1})([a-z]{1})" #(str (% 1) (str/upper-case (% 2))))]
+    (str/replace sentenceStartFormattedString #"(^[a-z]{1})" #(str/upper-case (%1 1)))))
+
 (defn DecompressFileContent
   [fileName]
   (if (.exists (io/file fileName))
@@ -92,5 +99,5 @@
                                                        compressedWord))]
                                  returnedWord))
                              compressedWords)]
-      (println (str (str/join " " originalWords))))
+      (println (FormatUncompressedString (str (str/join " " originalWords)))))
     (println "Oops: specified file does not exist")))
